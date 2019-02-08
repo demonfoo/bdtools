@@ -17,6 +17,7 @@
 #define BD_STREAM_TYPE_AUDIO_DTSHD_MASTER   0x86
 #define BD_STREAM_TYPE_VIDEO_VC1            0xea
 #define BD_STREAM_TYPE_VIDEO_H264           0x1b
+#define BD_STREAM_TYPE_VIDEO_HEVC           0x24
 #define BD_STREAM_TYPE_SUB_PG               0x90
 #define BD_STREAM_TYPE_SUB_IG               0x91
 #define BD_STREAM_TYPE_SUB_TEXT             0x92

@@ -32,6 +32,7 @@ value_map_t codec_map[] = {
     {0x86, "DTS-HD Master"},
     {0xea, "VC-1"},
     {0x1b, "H.264"},
+    {0x24, "HEVC/MPEG-H Part 2"},
     {0x90, "Presentation Graphics"},
     {0x91, "Interactive Graphics"},
     {0x92, "Text Subtitle"},
@@ -47,6 +48,7 @@ value_map_t video_format_map[] = {
     {5, "720p"},
     {6, "1080p"},
     {7, "576p"},
+    {8, "2160p"},
     {0, NULL}
 };
 
@@ -133,6 +135,7 @@ _show_stream(MPLS_STREAM *ss, int level)
         case 0x02:
         case 0xea:
         case 0x1b:
+        case 0x24:
             indent_printf(level, "Format %02x: %s", ss->format,
                         _lookup_str(video_format_map, ss->format));
             indent_printf(level, "Rate %02x: %s", ss->rate,
@@ -150,7 +153,7 @@ _show_stream(MPLS_STREAM *ss, int level)
         case 0x86:
             indent_printf(level, "Format %02x: %s", ss->format,
                         _lookup_str(audio_format_map, ss->format));
-            indent_printf(level, "Rate %02x:", ss->rate,
+            indent_printf(level, "Rate %02x: %s", ss->rate,
                         _lookup_str(audio_rate_map, ss->rate));
             lang = str_substr((char*)ss->lang, 0, 3);
             indent_printf(level, "Language: %s", lang->buf);
