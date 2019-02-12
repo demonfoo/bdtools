@@ -1,0 +1,16 @@
+*.o
+*.lo
+*.la
+*.pc
+.*.sw?
+Makefile
+.deps
+.libs
+config.h
+config.log
+config.status
+src/bdsplice
+src/clpi_dump
+src/mpls_dump
+libtool
+stamp-h1
