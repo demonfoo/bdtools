@@ -6,105 +6,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "bdtools/clpi_parse.h"
+#include "bdtools/codecstrings.h"
 #include "util.h"
 
 static int verbose;
-
-typedef struct {
-    int value;
-    char *str;
-} value_map_t;
-
-static inline char*
-_lookup_str(value_map_t *map, int val)
-{
-    int ii;
-
-    for (ii = 0; map[ii].str; ii++) {
-        if (val == map[ii].value) {
-            return map[ii].str;
-        }
-    }
-    return "?";
-}
-
-value_map_t codec_map[] = {
-    {0x01, "MPEG-1 Video"},
-    {0x02, "MPEG-2 Video"},
-    {0x03, "MPEG-1 Audio"},
-    {0x04, "MPEG-2 Audio"},
-    {0x80, "LPCM"},
-    {0x81, "AC-3"},
-    {0x82, "DTS"},
-    {0x83, "TrueHD"},
-    {0x84, "AC-3 Plus"},
-    {0x85, "DTS-HD"},
-    {0x86, "DTS-HD Master"},
-    {0xea, "VC-1"},
-    {0x1b, "H.264"},
-    {0x24, "HEVC/MPEG-H Part 2"},
-    {0x90, "Presentation Graphics"},
-    {0x91, "Presentation Graphics"},
-    {0x92, "Interactive Graphics"},
-    {0, NULL}
-};
-
-value_map_t video_format_map[] = {
-    {0, "Reserved"},
-    {1, "480i"},
-    {2, "576i"},
-    {3, "480p"},
-    {4, "1080i"},
-    {5, "720p"},
-    {6, "1080p"},
-    {7, "576p"},
-    {8, "2160p"},
-    {0, NULL}
-};
-
-value_map_t video_rate_map[] = {
-    {0, "Reserved1"},
-    {1, "23.976"},
-    {2, "24"},
-    {3, "25"},
-    {4, "29.97"},
-    {5, "Reserved2"},
-    {6, "50"},
-    {7, "59.94"},
-    {0, NULL}
-};
-
-value_map_t video_aspect_map[] = {
-    {0, "Reserved1"},
-    {1, "Reserved2"},
-    {2, "4:3"},
-    {3, "16:9"},
-    {0, NULL}
-};
-
-value_map_t audio_format_map[] = {
-    {0, "Reserved1"},
-    {1, "Mono"},
-    {2, "Reserved2"},
-    {3, "Stereo"},
-    {4, "Reserved3"},
-    {5, "Reserved4"},
-    {6, "Multi Channel"},
-    {12, "Combo"},
-    {0, NULL}
-};
-
-value_map_t audio_rate_map[] = {
-    {0, "Reserved1"},
-    {1, "48 Khz"},
-    {2, "Reserved2"},
-    {3, "Reserved3"},
-    {4, "96 Khz"},
-    {5, "192 Khz"},
-    {12, "48/192 Khz"},
-    {14, "48/96 Khz"},
-    {0, NULL}
-};
 
 static void
 _show_stream(CLPI_PROG_STREAM *ss, int level)
@@ -115,11 +20,11 @@ _show_stream(CLPI_PROG_STREAM *ss, int level)
                     _lookup_str(codec_map, ss->coding_type));
     indent_printf(level, "PID: %04x", ss->pid);
     switch (ss->coding_type) {
-        case 0x01:
-        case 0x02:
-        case 0xea:
-        case 0x1b:
-        case 0x24:
+        case BD_STREAM_TYPE_VIDEO_MPEG1:
+        case BD_STREAM_TYPE_VIDEO_MPEG2:
+        case BD_STREAM_TYPE_VIDEO_VC1:
+        case BD_STREAM_TYPE_VIDEO_H264:
+        case BD_STREAM_TYPE_VIDEO_HEVC:
             indent_printf(level, "Format %02x: %s", ss->format,
                         _lookup_str(video_format_map, ss->format));
             indent_printf(level, "Rate %02x: %s", ss->rate,
@@ -129,15 +34,15 @@ _show_stream(CLPI_PROG_STREAM *ss, int level)
             indent_printf(level, "oc_flag %02x", ss->oc_flag);
             break;
 
-        case 0x03:
-        case 0x04:
-        case 0x80:
-        case 0x81:
-        case 0x82:
-        case 0x83:
-        case 0x84:
-        case 0x85:
-        case 0x86:
+        case BD_STREAM_TYPE_AUDIO_MPEG1:
+        case BD_STREAM_TYPE_AUDIO_MPEG2:
+        case BD_STREAM_TYPE_AUDIO_LPCM:
+        case BD_STREAM_TYPE_AUDIO_AC3:
+        case BD_STREAM_TYPE_AUDIO_DTS:
+        case BD_STREAM_TYPE_AUDIO_TRUHD:
+        case BD_STREAM_TYPE_AUDIO_AC3PLUS:
+        case BD_STREAM_TYPE_AUDIO_DTSHD:
+        case BD_STREAM_TYPE_AUDIO_DTSHD_MASTER:
             indent_printf(level, "Format %02x: %s", ss->format,
                         _lookup_str(audio_format_map, ss->format));
             indent_printf(level, "Rate %02x:", ss->rate,
@@ -148,17 +53,11 @@ _show_stream(CLPI_PROG_STREAM *ss, int level)
             free(lang);
             break;
 
-        case 0x90:
-        case 0x91:
-        case 0xa0:
-            lang = str_substr((char*)ss->lang, 0, 3);
-            indent_printf(level, "Language: %s", lang->buf);
-            str_free(lang);
-            free(lang);
-            break;
-
-        case 0x92:
+        case BD_STREAM_TYPE_SUB_TEXT:
             indent_printf(level, "Char Code: %02x", ss->char_code);
+        case BD_STREAM_TYPE_SUB_PG:
+        case BD_STREAM_TYPE_SUB_IG:
+        case 0xa0: // <- what is this
             lang = str_substr((char*)ss->lang, 0, 3);
             indent_printf(level, "Language: %s", lang->buf);
             str_free(lang);
