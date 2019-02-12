@@ -29,6 +29,7 @@
 #define BD_VIDEO_FORMAT_720P                5   // SMPTE 296M
 #define BD_VIDEO_FORMAT_1080P               6   // SMPTE 274M
 #define BD_VIDEO_FORMAT_576P                7   // ITU-R BT.1358
+#define BD_VIDEO_FORMAT_2160P               8   // SMPTE 2036-1.2014
 
 #define BD_VIDEO_RATE_24000_1001            1   // 23.976
 #define BD_VIDEO_RATE_24                    2
